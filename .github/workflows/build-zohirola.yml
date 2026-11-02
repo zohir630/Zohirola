@@ -1,0 +1,36 @@
+name: Unzip and Build Zohirola APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip
+        run: unzip -q -o Zohirola-clean.zip -d project
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: project/zohirola
+
+      - name: Build debug APK
+        working-directory: project/zohirola
+        run: |
+          chmod +x gradlew
+          ./gradlew :androidApp:assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zohirola-debug-apk
+          path: project/zohirola/androidApp/build/outputs/apk/debug/*.apk
